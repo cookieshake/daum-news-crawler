@@ -9,7 +9,6 @@ class Article(Base):
 
     aid = Column(String, primary_key=True)
     oid = Column(Integer)
-    type = Column(String)
     title = Column(String)
     time = Column(TIMESTAMP(timezone=True))
     contents = Column(String)
