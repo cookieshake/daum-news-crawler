@@ -52,7 +52,7 @@ def read_page(aid):
     contents = contents.replace('\n', '')
 
 
-    timestamp = datetime.strptime(str(aid)[:12], '%Y%m%d%H%M')
+    timestamp = datetime.strptime(str(aid)[:14], '%Y%m%d%H%M%S')
     timestamp = timestamp.replace(tzinfo=KST)
 
 
