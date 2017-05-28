@@ -36,7 +36,7 @@ def read_page(aid):
     if error is not None:
         raise ArticleNotFound
 
-    if 'health' in g.url:
+    if 'life' in g.url:
         title = html.find('div', 'tit_subject').get_text().strip()
         contents = html.find('div', id='dmcfContents')
     else:
