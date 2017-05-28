@@ -1,0 +1,6 @@
+tqdm
+pymongo
+bs4
+requests
+sqlalchemy
+psycopg2
