@@ -1,31 +1,36 @@
 import re
 import requests
+from requests_futures.sessions import FuturesSession
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta, timezone
 
 from dnc.exceptions import ArticleNotFound
 
 KST = timezone(timedelta(hours=9), 'KST')
-
+session = FuturesSession(max_workers=10)
 
 def get_aids(oid, date):
     aids = list()
-    page = 1
+    offset = 1
 
     while True:
-        g = requests.get('http://media.daum.net/cp/{}?page={}&regDate={}'.format(oid, page, date.strftime('%Y%m%d')))
-        html = BeautifulSoup(g.text, 'html.parser')
 
-        none = html.find('p', 'txt_none')
-        if none is not None:
-            break
+        results = [
+            session.get('http://media.daum.net/cp/{}?page={}&regDate={}'.format(oid, page, date.strftime('%Y%m%d')))
+            for page in range(offset, offset + 10)
+        ]
 
-        aids_in_page = [tit.a['href'].split('/')[-1] for tit in html.find_all('strong', 'tit_thumb')]
-        aids.extend(aids_in_page)
+        for g in results:
+            g = g.result()
+            html = BeautifulSoup(g.text, 'html.parser')
+            none = html.find('p', 'txt_none')
+            if none is not None:
+                return aids
 
-        page += 1
-
-    return aids
+            aids_in_page = [tit.a['href'].split('/')[-1] for tit in html.find_all('strong', 'tit_thumb')]
+            aids.extend(aids_in_page)
+  
+        offset += 10
 
 
 def read_page(aid):
@@ -51,8 +56,8 @@ def read_page(aid):
     contents = contents.replace('\0', '')
     contents = contents.replace('\n', '')
 
-
-    timestamp = datetime.strptime(str(aid)[:14], '%Y%m%d%H%M%S')
+    regDate = html.find('meta',  property='og:regDate')['content']
+    timestamp = datetime.strptime(regDate[:14], '%Y%m%d%H%M%S')
     timestamp = timestamp.replace(tzinfo=KST)
 
 

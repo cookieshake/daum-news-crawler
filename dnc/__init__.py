@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker
 import time
 
 from datetime import timedelta, datetime
+from multiprocessing import Pool
 
 from dnc.schema import Article, Base
 from dnc.tools import get_aids, read_page
@@ -32,17 +33,13 @@ def crawl_organization_with_postgres(oid, start_date, end_date, db_path):
         except ArticleNotFound:
             break
 
-        for aid in aids:
-            try:
-                article = read_page(aid)
-            except:
-                time.sleep(10)
-                article = read_page(aid)
-
-            article['oid'] = oid
-            session.merge(Article(**article))
+        with Pool(5) as p:
+            articles = p.map(read_page, aids)
+        
+        for a in articles:
+            a['oid'] = oid
+            session.merge(Article(**a))
             count += 1
-
         session.commit()
         date -= timedelta(days=1)
 
