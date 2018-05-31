@@ -33,7 +33,7 @@ def crawl_organization_with_postgres(oid, start_date, end_date, db_path):
         except ArticleNotFound:
             break
 
-        with Pool(5) as p:
+        with Pool(10) as p:
             articles = p.map(read_page, aids)
         
         for a in articles:

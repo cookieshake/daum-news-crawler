@@ -14,6 +14,8 @@ def get_aids(oid, date):
     offset = 1
 
     while True:
+        if offset == 101:
+            return list(set(aids))
 
         results = [
             session.get('http://media.daum.net/cp/{}?page={}&regDate={}'.format(oid, page, date.strftime('%Y%m%d')))
@@ -25,11 +27,11 @@ def get_aids(oid, date):
             html = BeautifulSoup(g.text, 'html.parser')
             none = html.find('p', 'txt_none')
             if none is not None:
-                return aids
+                return list(set(aids))
 
             aids_in_page = [tit.a['href'].split('/')[-1] for tit in html.find_all('strong', 'tit_thumb')]
             aids.extend(aids_in_page)
-  
+        
         offset += 10
 
 
